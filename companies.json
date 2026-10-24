@@ -1,6 +1,56 @@
 {
-    "greenhouse": ["gitlab", "cloudflare"],
-    "lever": [],
-    "ashby": [],
-    "remotive_queries": ["devops", "cloud"]
+    "_notes": "Slugs: dept, protonai, ramp, gitlab, cloudflare confirmed. The rest are from memory; a wrong slug only logs [warn] and the run summary lists it. Remove or fix those.",
+
+    "greenhouse": [
+        "dept",
+        "protonai",
+        "gitlab",
+        "cloudflare",
+        "datadog",
+        "mongodb",
+        "elastic",
+        "grafanalabs",
+        "canonical",
+        "vercel",
+        "remotecom",
+        "contentful",
+        "mollie",
+        "sumup",
+        "n26",
+        "okta",
+        "twilio",
+        "fastly",
+        "pagerduty",
+        "stripe",
+        "coinbase",
+        "figma",
+        "discord",
+        "databricks",
+        "dropbox"
+    ],
+
+    "lever": [
+        "spotify",
+        "palantir",
+        "plaid",
+        "mistral",
+        "binance",
+        "ledger",
+        "criteo"
+    ],
+
+    "ashby": [
+        "ramp",
+        "notion",
+        "openai",
+        "snowflake",
+        "posthog",
+        "supabase",
+        "linear",
+        "deel",
+        "replit",
+        "modal"
+    ],
+
+    "remotive_queries": ["devops", "cloud", "sre"]
 }
