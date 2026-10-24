@@ -1,6 +1,5 @@
 {
-    "_notes": "Slugs: dept, protonai, ramp, gitlab, cloudflare confirmed. The rest are from memory; a wrong slug only logs [warn] and the run summary lists it. Remove or fix those.",
-
+    "_notes": "Slugs confirmed to return jobs in a real run. Add more; wrong slugs just log [warn].",
     "greenhouse": [
         "dept",
         "protonai",
@@ -12,9 +11,7 @@
         "grafanalabs",
         "canonical",
         "vercel",
-        "remotecom",
         "contentful",
-        "mollie",
         "sumup",
         "n26",
         "okta",
@@ -28,17 +25,7 @@
         "databricks",
         "dropbox"
     ],
-
-    "lever": [
-        "spotify",
-        "palantir",
-        "plaid",
-        "mistral",
-        "binance",
-        "ledger",
-        "criteo"
-    ],
-
+    "lever": ["spotify", "palantir", "binance"],
     "ashby": [
         "ramp",
         "notion",
@@ -47,10 +34,8 @@
         "posthog",
         "supabase",
         "linear",
-        "deel",
         "replit",
         "modal"
     ],
-
     "remotive_queries": ["devops", "cloud", "sre"]
 }

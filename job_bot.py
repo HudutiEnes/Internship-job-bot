@@ -1,4 +1,5 @@
 """Internship funnel bot: polls job sources, filters, sends new matches to Telegram."""
+
 import datetime
 import json
 import os
@@ -17,7 +18,8 @@ MAX_MESSAGES = 30  # per run, avoids spam on first run
 
 # ---------- FILTERS (edit these) ----------
 LEVEL = re.compile(
-    r"\b(intern|internship|trainee|junior|graduate|entry[- ]level|working student|apprentice|student|early career|new grad)\b", re.I
+    r"\b(intern|internship|trainee|junior|graduate|entry[- ]level|working student|apprentice|student|early career|new grad)\b",
+    re.I,
 )
 ROLE = re.compile(
     r"devops|cloud|sre|site reliability|platform|infrastructure|sysadmin|system admin|linux|"
@@ -26,10 +28,20 @@ ROLE = re.compile(
 )
 # Local (Skopje/Tetovo/Prishtina) roles often say just "DevOps Engineer" with ~1 year required.
 # For those, accept core DevOps-type titles even without a level word, unless clearly senior.
-ROLE_CORE = re.compile(r"devops|sre|site reliability|cloud|infrastructure|platform|sysadmin|system admin|systems engineer", re.I)
-SENIOR = re.compile(r"senior|sr\.?\b|lead|principal|staff|head|manager|director|architect|\biii\b|\bii\b", re.I)
-LOCAL = re.compile(r"tetovo|skopje|prishtina|pristina|kosovo|kosova|north macedonia|macedonia", re.I)
-EU_REMOTE = re.compile(r"europe|emea|\beu\b|worldwide|anywhere|global|north macedonia|kosovo", re.I)
+ROLE_CORE = re.compile(
+    r"devops|sre|site reliability|cloud|infrastructure|platform|sysadmin|system admin|systems engineer",
+    re.I,
+)
+SENIOR = re.compile(
+    r"senior|sr\.?\b|lead|principal|staff|head|manager|director|architect|\biii\b|\bii\b",
+    re.I,
+)
+LOCAL = re.compile(
+    r"tetovo|skopje|prishtina|pristina|kosovo|kosova|north macedonia|macedonia", re.I
+)
+EU_REMOTE = re.compile(
+    r"europe|emea|\beu\b|worldwide|anywhere|global|north macedonia|kosovo", re.I
+)
 
 
 def classify(location, remote):
@@ -37,7 +49,9 @@ def classify(location, remote):
     loc = (location or "").strip()
     if LOCAL.search(loc):
         return "📍 local (check on-site/hybrid)"
-    if remote or "remote" in loc.lower():
+    if remote or re.search(
+        r"remote|home[- ]?based|work from home|distributed", loc, re.I
+    ):
         if EU_REMOTE.search(loc):
             return "🌍 remote (EU/worldwide)"
         if loc.lower() in ("", "remote", "anywhere"):
@@ -53,41 +67,74 @@ def get(url):
 
 
 def greenhouse(slug):
-    for j in get(f"https://boards-api.greenhouse.io/v1/boards/{slug}/jobs").json()["jobs"]:
-        yield dict(title=j["title"], company=slug, url=j["absolute_url"],
-                   location=(j.get("location") or {}).get("name", ""), remote=False)
+    for j in get(f"https://boards-api.greenhouse.io/v1/boards/{slug}/jobs").json()[
+        "jobs"
+    ]:
+        yield dict(
+            title=j["title"],
+            company=slug,
+            url=j["absolute_url"],
+            location=(j.get("location") or {}).get("name", ""),
+            remote=False,
+        )
 
 
 def lever(slug):
     for j in get(f"https://api.lever.co/v0/postings/{slug}?mode=json").json():
         cats = j.get("categories") or {}
         loc = ", ".join(cats.get("allLocations") or [cats.get("location", "")])
-        yield dict(title=j["text"], company=slug, url=j["hostedUrl"], location=loc,
-                   remote=j.get("workplaceType") == "remote")
+        yield dict(
+            title=j["text"],
+            company=slug,
+            url=j["hostedUrl"],
+            location=loc,
+            remote=j.get("workplaceType") == "remote",
+        )
 
 
 def ashby(slug):
-    for j in get(f"https://api.ashbyhq.com/posting-api/job-board/{slug}").json()["jobs"]:
+    for j in get(f"https://api.ashbyhq.com/posting-api/job-board/{slug}").json()[
+        "jobs"
+    ]:
         locs = [j.get("location", "")] + [
             s.get("location", "") if isinstance(s, dict) else str(s)
             for s in j.get("secondaryLocations") or []
         ]
-        yield dict(title=j["title"], company=slug, url=j["jobUrl"],
-                   location=", ".join(l for l in locs if l), remote=bool(j.get("isRemote")))
+        yield dict(
+            title=j["title"],
+            company=slug,
+            url=j["jobUrl"],
+            location=", ".join(l for l in locs if l),
+            remote=bool(j.get("isRemote")),
+        )
 
 
 def weworkremotely():
-    root = ET.fromstring(get("https://weworkremotely.com/categories/remote-devops-sysadmin-jobs.rss").content)
+    root = ET.fromstring(
+        get(
+            "https://weworkremotely.com/categories/remote-devops-sysadmin-jobs.rss"
+        ).content
+    )
     for item in root.iter("item"):
         company, _, title = (item.findtext("title") or "").partition(": ")
-        yield dict(title=title or company, company=company, url=item.findtext("link"),
-                   location=item.findtext("region") or "Remote", remote=True)
+        yield dict(
+            title=title or company,
+            company=company,
+            url=item.findtext("link"),
+            location=item.findtext("region") or "Remote",
+            remote=True,
+        )
 
 
 def remotive(query):
     for j in get(f"https://remotive.com/api/remote-jobs?search={query}").json()["jobs"]:
-        yield dict(title=j["title"], company=j["company_name"], url=j["url"],
-                   location=j.get("candidate_required_location", ""), remote=True)
+        yield dict(
+            title=j["title"],
+            company=j["company_name"],
+            url=j["url"],
+            location=j.get("candidate_required_location", ""),
+            remote=True,
+        )
 
 
 # ---------- STATE / NOTIFY ----------
@@ -128,7 +175,9 @@ def main():
         sources.append((f"ashby:{s}", lambda s=s: ashby(s), 0))
     sources.append(("wwr", weworkremotely, 3600))
     for q in CFG.get("remotive_queries", []):
-        sources.append((f"remotive:{q}", lambda q=q: remotive(q), 6 * 3600))  # Remotive asks for few calls/day
+        sources.append(
+            (f"remotive:{q}", lambda q=q: remotive(q), 6 * 3600)
+        )  # Remotive asks for few calls/day
 
     found = []
     failed = []
@@ -148,16 +197,22 @@ def main():
         for j in jobs:
             if not j["url"] or j["url"] in seen:
                 continue
-            if LEVEL.search(j["title"]):
-                print(f"[debug] {j['title']} | {j['location']} | role_ok={bool(ROLE.search(j['title']))} "
-                      f"| loc={classify(j['location'], j['remote'])}")
+            if os.environ.get("DEBUG") and LEVEL.search(j["title"]):
+                print(
+                    f"[debug] {j['title']} | {j['location']} | role_ok={bool(ROLE.search(j['title']))} "
+                    f"| loc={classify(j['location'], j['remote'])}"
+                )
             title = j["title"]
             tag = classify(j["location"], j["remote"])
             if not tag:
                 continue
             if LEVEL.search(title) and ROLE.search(title):
                 pass
-            elif tag.startswith("📍") and ROLE_CORE.search(title) and not SENIOR.search(title):
+            elif (
+                tag.startswith("📍")
+                and ROLE_CORE.search(title)
+                and not SENIOR.search(title)
+            ):
                 tag += " | no level in title, check requirements"
             else:
                 continue
