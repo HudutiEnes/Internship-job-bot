@@ -1,14 +1,15 @@
 {
  "last": {
-  "remotive:cloud": 1794282103.270183,
-  "remotive:devops": 1794282103.1893382,
-  "remotive:sre": 1794282103.3449204,
-  "wwr": 1794282103.0760033
+  "remotive:cloud": 1794311304.5214822,
+  "remotive:devops": 1794311304.4846416,
+  "remotive:sre": 1794311304.5491443,
+  "wwr": 1794311304.400741
  },
  "seen": {
   "https://job-boards.greenhouse.io/canonical/jobs/5370815": "2026-10-24",
   "https://job-boards.greenhouse.io/canonical/jobs/5643282": "2026-10-24",
   "https://job-boards.greenhouse.io/canonical/jobs/6707669": "2026-10-24",
-  "https://job-boards.greenhouse.io/canonical/jobs/8249005": "2026-10-24"
+  "https://job-boards.greenhouse.io/canonical/jobs/8249005": "2026-10-24",
+  "https://job-boards.greenhouse.io/dept/jobs/8365231": "2026-11-10"
  }
 }
